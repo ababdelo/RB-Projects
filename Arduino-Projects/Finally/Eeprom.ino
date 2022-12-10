@@ -1,36 +1,40 @@
 
 /**************************************Store UID to the EEPROM***************************************/
 
-void Store2Eeprom(int *address, char* ID)
+bool write2eeprom(int address, char* ID, char sep)
 {
-  size_t  len = ft_strlen(ID);
-  EEPROM.write(address, len);
-  for (size_t x = 0; x < len; x++)
-  { if (EEPROM.read(address + 1 + x) == "")
+  int index = 0;
+  while (ID[index] != '\0')
+  {
+    if (EEPROM.read(address) == "")
     {
       successStore = true;
-      EEPROM.write(address + 1 + x, ID[x]);
+      EEPROM.write(address, ID[index]);
     }
     else
-    {
       successStore = false;
-      address = address + len;
-    }
+    address++;
+    index++;
   }
+  EEPROM.write(address, sep);
+  return (successStore);
 }
 
 /*****************************************************************************************************/
 
 /**************************************Store From the EEPROM******************************************/
 
-char *ReadfromEeprom(int *address)
+char *readfromeeprom(int address, char sep)
 {
-  size_t  len = EEPROM.read(address);
-  for (size_t x = 0; x < len; x++)
+  int index = 0;
+  while (EEPROM.read(address) != "" && EEPROM.read(address) != sep)
   {
-    StoredUID[x] = EEPROM.read(address + x);
+    StoredUID[index] = EEPROM.read(address);
+    address++;
+    index++;
   }
-
+  StoredUID[index] = '\0';
+  return (StoredUID);
 }
 
 /*****************************************************************************************************/

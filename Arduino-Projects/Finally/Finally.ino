@@ -16,10 +16,11 @@
 /***************************************************************************************************/
 
 /************************************Declaring used Variables***************************************/
-char* myTags[31];
-char *StoredUID; // The string where all uid wil be stored in
-int tagsCount = 0;
-int address = 10;
+String myTags[63]; // 64 UID ---> 8 x 64 = 512 byte of eeprom
+char  sep = '_';
+char *StoredUID;
+int addrread = 0;
+int addrwrite = 0;
 String tagID = "";
 boolean successRead = false;
 boolean successStore = false;
@@ -35,15 +36,11 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);  // Set the LCD address to 0x27 in PCF8574 o
 
 boolean getID();
 
-size_t ft_strlen(char *str);
-char  *ft_strdup(char *s1);
-char  *ft_substr(char const *s, unsigned int start, size_t len);
-int  wrd_cnt(char const *s, char del);
-char  **ft_free(char **str, int x);
-char  **ft_split(char const *s, char c);
+int  ft_strstr(String str, String to_f);
+void  ft_bzero(void *s, size_t n);
 
-void Store2Eeprom(int *address, char* ID);
-char *ReadfromEeprom(int *address);
+bool write2eeprom(int address, char* ID, char sep);
+char *readfromeeprom(int address, char sep);
 
 void OpenDoor();
 void StandByMsg();
@@ -54,7 +51,8 @@ void denied();
 
 
 /****************************************Setup Function*********************************************/
-void setup() {
+void setup()
+{
   // Initiating
   SPI.begin();         // SPI bus
   mfrc522.PCD_Init();  //  MFRC522
@@ -75,9 +73,13 @@ void setup() {
 /***************************************************************************************************/
 
 /*****************************************Loop Function*********************************************/
-void loop() {
-
-  while (getID()) {
+void loop()
+{
+  int index = 0;
+  while (getID())
+  {
+    while (EEPROM.read(addrread++) != "") // Store UID of allowed users from eeprom to the array that'll be compored
+      myTags[index] = readfromeeprom(addrread, sep);
     Serial.println(tagID);
     correctTag = false;
     // Checks whether the scanned tag is the master tag
@@ -89,9 +91,10 @@ void loop() {
       while (!successRead) {
         successRead = getID();
         if (successRead == true) {
-          for (int i = 0; i < 31; i++) {
+          for (int i = 0; i < 63; i++) {
             if (tagID == myTags[i]) {
-              myTags[i] = "";
+              int ind = ft_strstr(myTags[i], tagID);
+              ft_bzero(tagID[ind], strlen(tagID[ind]));
               lcd.clear();
               lcd.setCursor(0, 0);
               lcd.print("  Tag Removed!");
@@ -99,19 +102,18 @@ void loop() {
               return;
             }
           }
-          myTags[tagsCount] = tagID.c_str();
+          write2eeprom(addrwrite, tagID.c_str(), sep);
           lcd.clear();
           lcd.setCursor(0, 0);
           lcd.print("   Tag Added!");
           StandByMsg();
-          tagsCount++;
           return;
         }
       }
     } else {
       successRead = false;
       // Checks whether the scanned tag is authorized
-      for (int i = 0; i < 31; i++) {
+      for (int i = 0; i < 63; i++) {
         if (tagID == myTags[i]) {
           lcd.clear();
           lcd.setCursor(0, 0);
