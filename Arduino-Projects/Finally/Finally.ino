@@ -22,8 +22,6 @@ char *StoredUID;
 int addrread = 0;
 int addrwrite = 0;
 String tagID = "";
-boolean successRead = false;
-boolean successStore = false;
 boolean correctTag = false;
 /***************************************************************************************************/
 
@@ -39,7 +37,7 @@ boolean getID();
 int  ft_strstr(String str, String to_f);
 void  ft_bzero(void *s, size_t n);
 
-bool write2eeprom(int address, char* ID, char sep);
+void write2eeprom(int address, char* ID, char sep);
 char *readfromeeprom(int address, char sep);
 
 void OpenDoor();

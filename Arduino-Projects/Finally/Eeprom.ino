@@ -1,23 +1,17 @@
 
 /**************************************Store UID to the EEPROM***************************************/
 
-bool write2eeprom(int address, char* ID, char sep)
+void write2eeprom(int address, char* ID, char sep)
 {
   int index = 0;
   while (ID[index] != '\0')
   {
     if (EEPROM.read(address) == "")
-    {
-      successStore = true;
       EEPROM.write(address, ID[index]);
-    }
-    else
-      successStore = false;
     address++;
     index++;
   }
   EEPROM.write(address, sep);
-  return (successStore);
 }
 
 /*****************************************************************************************************/
