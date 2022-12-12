@@ -1,80 +1,14 @@
+#include"LIB.h"
 
-#include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
-#include <SPI.h>        // RC522 Module uses SPI protocol
-#include <MFRC522.h>  // Library for Mifare RC522 Devices
-
-/*
-  Instead of a Relay maybe you want to use a servo
-  Servos can lock and unlock door locks too
-  There are examples out there.
-*/
-
-// #include <Servo.h>
-
-/*
-  For visualizing whats going on hardware
-  we need some leds and
-  to control door lock a relay and a wipe button
-  (or some other hardware)
-  Used common anode led,digitalWriting HIGH turns OFF led
-  Mind that if you are going to use common cathode led or
-  just seperate leds, simply comment out #define COMMON_ANODE,
-*/
-
-#define COMMON_ANODE
-
-#ifdef COMMON_ANODE
-#define LED_ON LOW
-#define LED_OFF HIGH
-#else
-#define LED_ON HIGH
-
-#define LED_OFF LOW
-#endif
-
-#define redLed 7    // Set Led Pins
-#define greenLed 6
-#define blueLed 5
-
-#define relay 4     // Set Relay Pin
-#define wipeB 3     // Button pin for WipeMode
-
-boolean match = false;          // initialize card match to false
-boolean programMode = false;  // initialize programming mode to false
-boolean replaceMaster = false;
-
-int successRead;    // Variable integer to keep if we have Successful Read from Reader
-
-byte storedCard[4];   // Stores an ID read from EEPROM
-byte readCard[4];   // Stores scanned ID read from RFID Module
-byte masterCard[4];   // Stores master card's ID read from EEPROM
-
-/*
-  We need to define MFRC522's pins and create instance
-  Pin layout should be as follows (on Arduino Uno):
-  MOSI: Pin 11 / ICSP-4
-  MISO: Pin 12 / ICSP-1
-  SCK : Pin 13 / ICSP-3
-  SS : Pin 10 (Configurable)
-  RST : Pin 9 (Configurable)
-  look MFRC522 Library for
-  other Arduinos' pin configuration
-*/
-
-#define SS_PIN 10
-#define RST_PIN 9
-MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance.
-
-///////////////////////////////////////// Setup ///////////////////////////////////
 void setup() {
   //Arduino Pin Configuration
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
   pinMode(blueLed, OUTPUT);
   pinMode(wipeB, INPUT_PULLUP);   // Enable pin's pull up resistor
-  pinMode(relay, OUTPUT);
-  //Be careful how relay circuit behave on while resetting or power-cycling your Arduino
-  digitalWrite(relay, LOW);    // Make sure door is locked
+  pinMode(relaydoor, OUTPUT);
+  //Be careful how relaydoor circuit behave on while resetting or power-cycling your Arduino
+  digitalWrite(relaydoor, LOW);    // Make sure door is locked
   digitalWrite(redLed, LED_OFF);  // Make sure led is off
   digitalWrite(greenLed, LED_OFF);  // Make sure led is off
   digitalWrite(blueLed, LED_OFF); // Make sure led is off
@@ -157,8 +91,6 @@ void setup() {
   cycleLeds();    // Everything ready lets give user some feedback by cycling leds
 }
 
-
-///////////////////////////////////////// Main Loop ///////////////////////////////////
 void loop () {
   do {
     successRead = getID();  // sets successRead to 1 when we get read from reader otherwise 0

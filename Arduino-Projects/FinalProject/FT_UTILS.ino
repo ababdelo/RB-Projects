@@ -3,9 +3,9 @@ void granted (int setDelay) {
   digitalWrite(blueLed, LED_OFF);   // Turn off blue LED
   digitalWrite(redLed, LED_OFF);  // Turn off red LED
   digitalWrite(greenLed, LED_ON);   // Turn on green LED
-  digitalWrite(relay, HIGH);     // Unlock door!
+  digitalWrite(relaydoor, HIGH);     // Unlock door!
   delay(setDelay);          // Hold door lock open for given seconds
-  digitalWrite(relay, LOW);    // Relock door
+  digitalWrite(relaydoor, LOW);    // Relock door
 }
 
 ///////////////////////////////////////// Access Denied  ///////////////////////////////////
@@ -36,7 +36,7 @@ void normalModeOn () {
   digitalWrite(blueLed, LED_ON);  // Blue LED ON and ready to read card
   digitalWrite(redLed, LED_OFF);  // Make sure Red LED is off
   digitalWrite(greenLed, LED_OFF);  // Make sure Green LED is off
-  digitalWrite(relay, HIGH);    // Make sure Door is Locked
+  digitalWrite(relaydoor, HIGH);    // Make sure Door is Locked
 }
 void ShowReaderDetails() {
   // Get the MFRC522 software version
